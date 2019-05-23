@@ -406,6 +406,7 @@ func genPayment(sess *BroadcastSession) (string, error) {
 		WinProb:           ticket.WinProb.Bytes(),
 		SenderNonce:       ticket.SenderNonce,
 		RecipientRandHash: ticket.RecipientRandHash.Bytes(),
+		AuxData:           ticket.AuxData,
 	}
 	protoPayment := &net.Payment{
 		Ticket: protoTicket,

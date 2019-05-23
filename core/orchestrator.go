@@ -107,6 +107,7 @@ func (orch *orchestrator) ProcessPayment(payment net.Payment, manifestID Manifes
 		WinProb:           new(big.Int).SetBytes(payment.Ticket.WinProb),
 		SenderNonce:       payment.Ticket.SenderNonce,
 		RecipientRandHash: ethcommon.BytesToHash(payment.Ticket.RecipientRandHash),
+		AuxData:           payment.Ticket.AuxData,
 	}
 	seed := new(big.Int).SetBytes(payment.Seed)
 

@@ -203,6 +203,9 @@ message Ticket {
     // 32 byte keccak-256 hash commitment to a random number provided
     // by the recipient
     bytes recipient_rand_hash = 6;
+
+    // Auxilary data used for validation
+    bytes aux_data = 7;
 }
 
 // Payment for transcoding video segments
