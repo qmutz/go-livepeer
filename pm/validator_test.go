@@ -6,6 +6,7 @@ import (
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/pkg/errors"
 )
 
 func TestValidateTicket(t *testing.T) {
@@ -18,7 +19,9 @@ func TestValidateTicket(t *testing.T) {
 	sv := &stubSigVerifier{}
 	sv.SetVerifyResult(true)
 
-	v := NewValidator(sv)
+	adv := &stubAuxDataValidator{}
+
+	v := NewValidator(sv, adv)
 
 	// Test invalid recipient (null address)
 	ticket := &Ticket{
@@ -113,9 +116,32 @@ func TestValidateTicket(t *testing.T) {
 		t.Errorf("expected invalid signature error, got %v", err)
 	}
 
-	// Test valid ticket
+	// Test invalid aux data
 	// Set signature verification to return true
 	sv.SetVerifyResult(true)
+	expErr := errors.New("AuxDataValidator Validate error")
+	adv.SetErr(expErr)
+
+	ticket = &Ticket{
+		Recipient:         recipient,
+		Sender:            sender,
+		FaceValue:         big.NewInt(0),
+		WinProb:           big.NewInt(0),
+		SenderNonce:       0,
+		RecipientRandHash: recipientRandHash,
+	}
+
+	err = v.ValidateTicket(recipient, ticket, sig, recipientRand)
+	if err == nil {
+		t.Error("expected invalid aux data error")
+	}
+	if err != nil && err != expErr {
+		t.Errorf("expected invalid aux data error, got %v", err)
+	}
+
+	// Test valid ticket
+	// Set aux data validation to pass
+	adv.SetErr(nil)
 
 	if err := v.ValidateTicket(recipient, ticket, sig, recipientRand); err != nil {
 		t.Errorf("expected valid ticket, got error %v", err)
@@ -132,7 +158,9 @@ func TestIsWinningTicket(t *testing.T) {
 	sv := &stubSigVerifier{}
 	sv.SetVerifyResult(true)
 
-	v := NewValidator(sv)
+	adv := &stubAuxDataValidator{}
+
+	v := NewValidator(sv, adv)
 
 	// Test non-winning ticket
 	ticket := &Ticket{

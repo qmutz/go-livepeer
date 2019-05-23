@@ -30,15 +30,17 @@ type session struct {
 }
 
 type sender struct {
-	signer Signer
+	signer         Signer
+	auxDataCreator AuxDataCreator
 
 	sessions sync.Map
 }
 
 // NewSender creates a new Sender instance.
-func NewSender(signer Signer) Sender {
+func NewSender(signer Signer, auxDataCreator AuxDataCreator) Sender {
 	return &sender{
-		signer: signer,
+		signer:         signer,
+		auxDataCreator: auxDataCreator,
 	}
 }
 
@@ -64,6 +66,11 @@ func (s *sender) CreateTicket(sessionID string) (*Ticket, *big.Int, []byte, erro
 
 	senderNonce := atomic.AddUint32(&session.senderNonce, 1)
 
+	auxData, err := s.auxDataCreator.Create()
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
 	ticket := &Ticket{
 		Recipient:         session.ticketParams.Recipient,
 		RecipientRandHash: recipientRandHash,
@@ -71,6 +78,7 @@ func (s *sender) CreateTicket(sessionID string) (*Ticket, *big.Int, []byte, erro
 		SenderNonce:       senderNonce,
 		FaceValue:         session.ticketParams.FaceValue,
 		WinProb:           session.ticketParams.WinProb,
+		AuxData:           auxData,
 	}
 
 	sig, err := s.signer.Sign(ticket.Hash().Bytes())

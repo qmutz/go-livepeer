@@ -43,6 +43,13 @@ type RoundAuxDataValidator struct {
 	roundsManager RoundsManager
 }
 
+// NewRoundAuxDataCreator returns a RoundAuxDataCreator
+func NewRoundAuxDataCreator(roundsManager RoundsManager) *RoundAuxDataCreator {
+	return &RoundAuxDataCreator{
+		roundsManager: roundsManager,
+	}
+}
+
 // Create returns the last initialized round and its block hash as a byte slice
 func (c *RoundAuxDataCreator) Create() ([]byte, error) {
 	round, err := c.roundsManager.LastInitializedRound()
@@ -59,6 +66,13 @@ func (c *RoundAuxDataCreator) Create() ([]byte, error) {
 		ethcommon.LeftPadBytes(round.Bytes(), 32),
 		blkHash[:]...,
 	), nil
+}
+
+// NewRoundAuxDataValidator returns a RoundAuxDataValidator
+func NewRoundAuxDataValidator(roundsManager RoundsManager) *RoundAuxDataValidator {
+	return &RoundAuxDataValidator{
+		roundsManager: roundsManager,
+	}
 }
 
 // Validate returns a boolean indicating whether the provided ticket aux data

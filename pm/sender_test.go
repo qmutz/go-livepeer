@@ -9,6 +9,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts"
 	ethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/pkg/errors"
 )
 
 func TestStartSession_GivenSomeRecipientRandHash_UsesItAsSessionId(t *testing.T) {
@@ -82,6 +83,9 @@ func TestCreateTicket_GivenValidSessionId_UsesSessionParamsInTicket(t *testing.T
 	am.signShouldFail = false
 	am.saveSignRequest = true
 	am.signResponse = RandBytes(42)
+	auxData := RandBytes(64)
+	adc := sender.auxDataCreator.(*stubAuxDataCreator)
+	adc.SetAuxData(auxData)
 	senderAddress := sender.signer.Account().Address
 	recipient := RandAddress()
 	recipientRandHash := RandHash()
@@ -117,6 +121,9 @@ func TestCreateTicket_GivenValidSessionId_UsesSessionParamsInTicket(t *testing.T
 	if ticket.SenderNonce != 1 {
 		t.Errorf("expected ticket SenderNonce %d to be 1", ticket.SenderNonce)
 	}
+	if !bytes.Equal(ticket.AuxData, auxData) {
+		t.Errorf("expected ticket AuxData %v to be %v", ticket.AuxData, auxData)
+	}
 	if actualSeed != ticketParams.Seed {
 		t.Errorf("expected actual seed %d to be %d", actualSeed, ticketParams.Seed)
 	}
@@ -125,6 +132,26 @@ func TestCreateTicket_GivenValidSessionId_UsesSessionParamsInTicket(t *testing.T
 	}
 	if !bytes.Equal(am.lastSignRequest, ticket.Hash().Bytes()) {
 		t.Errorf("expected sig message bytes %v to be %v", am.lastSignRequest, ticket.Hash().Bytes())
+	}
+}
+
+func TestCreateTicket_GivenAuxDataError_ReturnsError(t *testing.T) {
+	sender := defaultSender(t)
+	recipient := RandAddress()
+	ticketParams := defaultTicketParams(t, recipient)
+	sessionID := sender.StartSession(ticketParams)
+
+	expErr := errors.New("AuxDataCreator Create error")
+	adc := sender.auxDataCreator.(*stubAuxDataCreator)
+	adc.SetErr(expErr)
+
+	_, _, _, err := sender.CreateTicket(sessionID)
+
+	if err == nil {
+		t.Errorf("expected an error when trying to create ticket aux data")
+	}
+	if err != nil && err != expErr {
+		t.Errorf("expected create ticket aux data error, got %v", err)
 	}
 }
 
@@ -196,7 +223,8 @@ func defaultSender(t *testing.T) *sender {
 	am := &stubSigner{
 		account: account,
 	}
-	s := NewSender(am)
+	adc := &stubAuxDataCreator{}
+	s := NewSender(am, adc)
 	return s.(*sender)
 }
 

@@ -219,6 +219,43 @@ func (s *stubSigner) Account() accounts.Account {
 	return s.account
 }
 
+type stubAuxDataCreator struct {
+	auxData []byte
+	err     error
+}
+
+func (s *stubAuxDataCreator) SetAuxData(auxData []byte) {
+	s.auxData = auxData
+}
+
+func (s *stubAuxDataCreator) SetErr(err error) {
+	s.err = err
+}
+
+func (s *stubAuxDataCreator) Create() ([]byte, error) {
+	if s.err != nil {
+		return nil, s.err
+	}
+
+	if s.auxData == nil {
+		return []byte{}, nil
+	}
+
+	return s.auxData, nil
+}
+
+type stubAuxDataValidator struct {
+	err error
+}
+
+func (s *stubAuxDataValidator) SetErr(err error) {
+	s.err = err
+}
+
+func (s *stubAuxDataValidator) Validate(auxData []byte) error {
+	return s.err
+}
+
 // MockRecipient is useful for testing components that depend on pm.Recipient
 type MockRecipient struct {
 	mock.Mock

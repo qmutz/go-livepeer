@@ -28,13 +28,15 @@ type Validator interface {
 
 // validator is an implementation of the Validator interface
 type validator struct {
-	sigVerifier SigVerifier
+	sigVerifier      SigVerifier
+	auxDataValidator AuxDataValidator
 }
 
 // NewValidator returns an instance of a validator
-func NewValidator(sigVerifier SigVerifier) Validator {
+func NewValidator(sigVerifier SigVerifier, auxDataValidator AuxDataValidator) Validator {
 	return &validator{
-		sigVerifier: sigVerifier,
+		sigVerifier:      sigVerifier,
+		auxDataValidator: auxDataValidator,
 	}
 }
 
@@ -54,6 +56,10 @@ func (v *validator) ValidateTicket(recipient ethcommon.Address, ticket *Ticket, 
 
 	if !v.sigVerifier.Verify(ticket.Sender, ticket.Hash().Bytes(), sig) {
 		return errInvalidTicketSignature
+	}
+
+	if err := v.auxDataValidator.Validate(ticket.AuxData); err != nil {
+		return err
 	}
 
 	return nil
