@@ -53,6 +53,9 @@ type Ticket struct {
 	// provided by the recipient. In order for the recipient to redeem
 	// a winning ticket, it must reveal the preimage to this hash
 	RecipientRandHash ethcommon.Hash
+
+	// AuxData is auxilary data included in the ticket used for validation
+	AuxData []byte
 }
 
 // Hash returns the keccak-256 hash of the ticket's fields as tightly packed
@@ -70,6 +73,7 @@ func (t *Ticket) flatten() []byte {
 	i += copy(buf[i:], ethcommon.LeftPadBytes(t.WinProb.Bytes(), uint256Size))
 	i += copy(buf[i:], ethcommon.LeftPadBytes(new(big.Int).SetUint64(uint64(t.SenderNonce)).Bytes(), uint256Size))
 	i += copy(buf[i:], t.RecipientRandHash.Bytes())
+	i += copy(buf[i:], t.AuxData)
 
 	return buf
 }
