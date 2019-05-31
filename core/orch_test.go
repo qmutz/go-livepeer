@@ -674,9 +674,9 @@ func defaultPayment(t *testing.T) net.Payment {
 		RecipientRandHash: pm.RandBytes(123),
 	}
 	return net.Payment{
-		Ticket: ticket,
-		Sig:    pm.RandBytes(123),
-		Seed:   pm.RandBytes(123),
+		Tickets: []*net.Ticket{ticket},
+		Sigs:    [][]byte{pm.RandBytes(123)},
+		Seeds:   [][]byte{pm.RandBytes(123)},
 	}
 }
 

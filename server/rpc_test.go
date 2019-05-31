@@ -270,15 +270,15 @@ func TestGenPayment(t *testing.T) {
 	require.Nil(err)
 
 	protoPayment := decodePayment(payment)
-	protoTicket := protoPayment.Ticket
+	protoTicket := protoPayment.Tickets[0]
 	assert.Equal(ticket.Recipient, ethcommon.BytesToAddress(protoTicket.Recipient))
 	assert.Equal(ticket.Sender, ethcommon.BytesToAddress(protoTicket.Sender))
 	assert.Equal(ticket.FaceValue, new(big.Int).SetBytes(protoTicket.FaceValue))
 	assert.Equal(ticket.WinProb, new(big.Int).SetBytes(protoTicket.WinProb))
 	assert.Equal(ticket.SenderNonce, protoTicket.SenderNonce)
 	assert.Equal(ticket.RecipientRandHash, ethcommon.BytesToHash(protoTicket.RecipientRandHash))
-	assert.Equal(sig, protoPayment.Sig)
-	assert.Equal(seed, new(big.Int).SetBytes(protoPayment.Seed))
+	assert.Equal(sig, protoPayment.Sigs[0])
+	assert.Equal(seed, new(big.Int).SetBytes(protoPayment.Seeds[0]))
 }
 
 func TestPing(t *testing.T) {
@@ -313,9 +313,13 @@ func TestGetPayment_GivenEmptyHeader_ReturnsEmptyPayment(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.Nil(err)
-	assert.Nil(payment.Ticket)
-	assert.Nil(payment.Sig)
-	assert.Nil(payment.Seed)
+
+	for i, t := range payment.Tickets {
+		assert.Nil(t)
+		assert.Nil(payment.Sigs[i])
+		assert.Nil(payment.Seeds[i])
+	}
+
 }
 
 func TestGetPayment_GivenInvalidProtoData_ReturnsError(t *testing.T) {
@@ -338,20 +342,24 @@ func TestGetPayment_GivenValidHeader_ReturnsPayment(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.Nil(err)
-	assert.Equal(protoTicket.Recipient, payment.Ticket.Recipient)
-	assert.Equal(protoTicket.Sender, payment.Ticket.Sender)
-	assert.Equal(protoTicket.FaceValue, payment.Ticket.FaceValue)
-	assert.Equal(protoTicket.WinProb, payment.Ticket.WinProb)
-	assert.Equal(protoTicket.SenderNonce, payment.Ticket.SenderNonce)
-	assert.Equal(protoTicket.RecipientRandHash, payment.Ticket.RecipientRandHash)
-	assert.Equal(protoPayment.Sig, payment.Sig)
-	assert.Equal(protoPayment.Seed, payment.Seed)
+
+	for i, t := range payment.Tickets {
+		assert.Equal(protoTicket.Recipient, t.Recipient)
+		assert.Equal(protoTicket.Sender, t.Sender)
+		assert.Equal(protoTicket.FaceValue, t.FaceValue)
+		assert.Equal(protoTicket.WinProb, t.WinProb)
+		assert.Equal(protoTicket.SenderNonce, t.SenderNonce)
+		assert.Equal(protoTicket.RecipientRandHash, t.RecipientRandHash)
+		assert.Equal(protoPayment.Sigs[i], payment.Sigs[i])
+		assert.Equal(protoPayment.Seeds[i], payment.Seeds[i])
+	}
+
 }
 
 func TestGetPaymentSender_GivenPaymentTicketIsNil(t *testing.T) {
 	protoTicket := defaultTicket(t)
 	protoPayment := defaultPayment(t, protoTicket)
-	protoPayment.Ticket = nil
+	protoPayment.Tickets[0] = nil
 
 	assert.Equal(t, ethcommon.Address{}, getPaymentSender(*protoPayment))
 }
@@ -516,9 +524,9 @@ func defaultTicketParams() *net.TicketParams {
 
 func defaultPayment(t *testing.T, ticket *net.Ticket) *net.Payment {
 	return &net.Payment{
-		Ticket: ticket,
-		Sig:    pm.RandBytes(123),
-		Seed:   pm.RandBytes(123),
+		Tickets: []*net.Ticket{ticket},
+		Sigs:    [][]byte{pm.RandBytes(123)},
+		Seeds:   [][]byte{pm.RandBytes(123)},
 	}
 }
 
