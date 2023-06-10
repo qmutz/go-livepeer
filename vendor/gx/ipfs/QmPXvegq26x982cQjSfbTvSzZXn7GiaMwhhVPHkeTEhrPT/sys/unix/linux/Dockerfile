@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:xenial-20210416
 
 # Dependencies to get the git sources and go binaries
 RUN apt-get update && apt-get install -y \
