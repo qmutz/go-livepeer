@@ -1,4 +1,4 @@
-FROM ubuntu:xenial
+FROM ubuntu:xenial-20210416
 
 # install build + test dependencies
 RUN apt-get update && \
