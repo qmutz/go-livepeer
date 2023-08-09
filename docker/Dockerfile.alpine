@@ -1,6 +1,6 @@
 # Docker file for building livepeer binary on alpine linux
 # this creates image of 63M in size
-FROM alpine:latest as builder
+FROM alpine:3.18.3 as builder
 
 ENV PKG_CONFIG_PATH /root/compiled/lib/pkgconfig
 WORKDIR /root
@@ -34,7 +34,7 @@ RUN go get github.com/stretchr/testify/mock
 COPY . .
 RUN go build cmd/livepeer/livepeer.go
 
-FROM alpine:latest
+FROM alpine:3.18.3
 
 WORKDIR /root
 RUN apk add --no-cache gnutls ca-certificates
