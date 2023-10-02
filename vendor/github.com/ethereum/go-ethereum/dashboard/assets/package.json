@@ -19,7 +19,7 @@
         "babel-loader": "8.0.5",
         "classnames": "^2.2.6",
         "color-convert": "^2.0.0",
-        "css-loader": "2.1.1",
+        "css-loader": "5.0.0",
         "escape-html": "^1.0.3",
         "eslint": "5.15.1",
         "eslint-config-airbnb": "^17.0.0",
