@@ -1,4 +1,4 @@
-FROM ubuntu:xenial
+FROM ubuntu:xenial-20201014
 
 # install build + test dependencies
 RUN apt-get update && \
