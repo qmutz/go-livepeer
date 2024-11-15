@@ -21,7 +21,7 @@
         "color-convert": "^2.0.0",
         "css-loader": "2.1.1",
         "escape-html": "^1.0.3",
-        "eslint": "5.15.1",
+        "eslint": "9.15.0",
         "eslint-config-airbnb": "^17.0.0",
         "eslint-loader": "2.1.2",
         "eslint-plugin-flowtype": "3.4.2",
