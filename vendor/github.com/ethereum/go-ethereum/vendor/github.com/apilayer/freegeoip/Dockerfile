@@ -1,4 +1,4 @@
-FROM golang:1.9
+FROM golang:1.24rc1
 
 COPY cmd/freegeoip/public /var/www
 
